@@ -97,3 +97,14 @@ class Tensor():
         for i in self.shape:
             size *= i
         return size
+
+class FP32Tensor():
+    """ Instantly map the byte buffer to a PyTorch tensor
+        torch.frombuffer(self.raw_bytes, dtype=torch.float32).reshape(self.shape)"""
+
+    def __init__(self, raw_bytes, shape):
+        self.raw_bytes = raw_bytes
+        self.shape = shape
+
+    def __str__(self):
+        return str(self.__class__) + ": " + str(self.__dict__)

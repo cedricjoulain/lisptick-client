@@ -5,9 +5,9 @@ opkg update
 opkg install python-codecs
 """
 
-__version__ = "0.1.0"
+__version__ = "1.0.0"
 __author__ = 'Cedric Joulain'
-__credits__ = 'Kereon Intelligence'
+__credits__ = 'Strigi-Form'
 
 import datetime
 import json

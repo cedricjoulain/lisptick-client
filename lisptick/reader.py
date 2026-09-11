@@ -3,7 +3,7 @@ import struct
 
 from lisptick.types import *
 from lisptick.exceptions import LispTickException
-from lisptick.classes import Duration, HeartBeat, InArray, Point, Sentinel, Tensor
+from lisptick.classes import Duration, HeartBeat, InArray, Point, Sentinel, Tensor, FP32Tensor
 
 
 # dec64 float factor
@@ -110,6 +110,8 @@ class LisptickReader():
                 res = self._get_heartbeat()
             elif idt == TTENSOR:
                 res = self._get_tensor()
+            elif idt == TFP32TENSOR:
+                res = self._get_fp32_tensor()
             else:
                 err = "Unhandled type %d" % idt
             if err != "":
@@ -238,6 +240,8 @@ class LisptickReader():
             return self._get_heartbeat()
         elif idt == TTENSOR:
             return self._get_tensor()
+        elif idt == TFP32TENSOR:
+            res = self._get_fp32_tensor()
         else:
             error = "Unhandled type %d" % idt
             self.con.close()
@@ -372,6 +376,23 @@ class LisptickReader():
             value = self._serial_get(serial_type)
             tensor.values[i] = value
         return tensor
+
+    def _get_fp32_tensor(self):
+        """Directly map raw bytes to a PyTorch FP32 Tensor"""
+        # Read number of dimensions
+        dims = struct.unpack('<q', self._fix_size_recv(8))[0]
+        shape = []
+        size = 1
+        for _ in range(dims):
+            dim = struct.unpack('<q', self._fix_size_recv(8))[0]
+            shape.append(dim)
+            size *= dim
+            
+        # Read raw float32 data (4 bytes per float)
+        raw_bytes = self._fix_size_recv(size * 4)
+        
+        # Instantly map the byte buffer to a PyTorch tensor
+        return FP32Tensor(raw_bytes, shape)
 
     def _fix_size_recv(self, size):
         """Ensure size is received and not less"""
